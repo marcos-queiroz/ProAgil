@@ -57,5 +57,5 @@ Para criação e manipulação do banco de dados o Entity deve ser adicionado no
 
 ## Modificar estrutura de uma tabela ou do BD
 
-    Basta alterar os atributos da classe em Models e adicionar uma nova migrations e atualizar o BD
+Basta alterar os atributos da classe em Models e adicionar uma nova migrations e atualizar o BD
 
