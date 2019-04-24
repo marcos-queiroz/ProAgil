@@ -1,55 +1,69 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, TemplateRef } from '@angular/core';
+import { EventoService } from './../_services/evento.service';
+import { Evento } from '../_models/Evento';
+import { BsModalRef, BsModalService } from 'ngx-bootstrap';
 
 @Component({
   selector: 'app-eventos',
   templateUrl: './eventos.component.html',
   styleUrls: ['./eventos.component.css']
 })
-export class EventosComponent implements OnInit {
 
-  _filtroLista: string;
+export class EventosComponent implements OnInit {
+  eventosFiltrados: Evento[];
+  eventos: Evento[];
+  imagemLargura = 50;
+  imagemMargem = 1;
+  mostrarImagem = false;
+  modalRef: BsModalRef;
+
+  _filtroLista = '';
+
+  constructor(
+      private eventoService: EventoService
+    , private modalService: BsModalService
+  ) { }
 
   get filtroLista(): string {
     return this._filtroLista;
   }
+
   set filtroLista(value: string) {
     this._filtroLista = value;
-    this.eventosFiltrados = this.filtroLista ? this.filtrarEventos(this._filtroLista) : this.eventos;
+    this.eventosFiltrados = this._filtroLista ? this.filtrarEventos(this._filtroLista) : this.eventos;
   }
 
-  eventosFiltrados: any = [];
-  eventos: any = [];
-  imagemLargura = 50;
-  imagemMargem = 1;
-  mostrarImagem = false;
+  openModal(template: TemplateRef<any>) {
+    this.modalRef = this.modalService.show(template);
+  }
 
-  constructor(private http: HttpClient) { }
-
+  // executa após os carregamentos
   ngOnInit() {
     this.getEventos();
   }
 
-  filtrarEventos(filtraPor: string): any {
+  // função para filtrar os eventos na lista
+  filtrarEventos(filtraPor: string): Evento[] {
     filtraPor = filtraPor.toLocaleLowerCase();
     return this.eventos.filter(
       evento => evento.tema.toLocaleLowerCase().indexOf(filtraPor) !== -1
-      ||
-      evento.local.toLocaleLowerCase().indexOf(filtraPor) !== -1
-      ||
-      evento.dataEvento.toLocaleLowerCase().indexOf(filtraPor) !== -1
     );
   }
 
+  // alterara se exibe ou não a imagem
   alternarImagem() {
     this.mostrarImagem = !this.mostrarImagem;
   }
 
-
+  // carrega os eventos usando o service getEvento
   getEventos() {
-    this.http.get('http://localhost:5000/api/values').subscribe(
-      response => {
-        this.eventos = response;
+    this.eventoService.getAllEvento().subscribe(
+      (_eventos: Evento[]) => {
+        // carrega o retorno da solicitação
+        this.eventos = _eventos;
+        // exibir na view
+        this.eventosFiltrados = this.eventos;
+        console.log(_eventos);
       },
       error => {
         console.error(error);
