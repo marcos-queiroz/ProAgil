@@ -2,6 +2,10 @@ import { Component, OnInit, TemplateRef } from '@angular/core';
 import { EventoService } from './../_services/evento.service';
 import { Evento } from '../_models/Evento';
 import { BsModalRef, BsModalService } from 'ngx-bootstrap';
+import { FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { defineLocale, BsLocaleService, ptBrLocale } from 'ngx-bootstrap';
+
+defineLocale('pt-br', ptBrLocale);
 
 @Component({
   selector: 'app-eventos',
@@ -15,14 +19,19 @@ export class EventosComponent implements OnInit {
   imagemLargura = 50;
   imagemMargem = 1;
   mostrarImagem = false;
-  modalRef: BsModalRef;
+  registerForm: FormGroup;
 
   _filtroLista = '';
 
+  // construtor
   constructor(
       private eventoService: EventoService
     , private modalService: BsModalService
-  ) { }
+    , private fb: FormBuilder
+    , private localeService: BsLocaleService
+  ) { 
+    this.localeService.use('pt-br');
+  }
 
   get filtroLista(): string {
     return this._filtroLista;
@@ -33,12 +42,13 @@ export class EventosComponent implements OnInit {
     this.eventosFiltrados = this._filtroLista ? this.filtrarEventos(this._filtroLista) : this.eventos;
   }
 
-  openModal(template: TemplateRef<any>) {
-    this.modalRef = this.modalService.show(template);
+  openModal(template: any) {
+    template.show();
   }
 
   // executa após os carregamentos
   ngOnInit() {
+    this.validation();
     this.getEventos();
   }
 
@@ -53,6 +63,24 @@ export class EventosComponent implements OnInit {
   // alterara se exibe ou não a imagem
   alternarImagem() {
     this.mostrarImagem = !this.mostrarImagem;
+  }
+
+  //
+  salvarAlteracao() {
+
+  }
+
+  // validação do formulario 
+  validation() {
+    this.registerForm = this.fb.group({
+      tema: ['', [Validators.required, Validators.minLength(4),Validators.maxLength(50)]],
+      local: ['', Validators.required],
+      dataEvento: ['', Validators.required],
+      qtdPessoas: ['', [Validators.required, Validators.max(120000)]],
+      imagemURL: ['', Validators.required],
+      telefone: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]]
+    });
   }
 
   // carrega os eventos usando o service getEvento
