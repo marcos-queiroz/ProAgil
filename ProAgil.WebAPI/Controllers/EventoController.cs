@@ -84,7 +84,7 @@ namespace ProAgil.WebAPI.Controllers
         }
 
         // Put
-        [HttpPut]
+        [HttpPut("{EventoId}")]
         public async Task<IActionResult> Put(int EventoId, Evento model)
         {
             try
@@ -108,7 +108,7 @@ namespace ProAgil.WebAPI.Controllers
         }
 
         // Delete
-        [HttpDelete]
+        [HttpDelete("{EventoId}")]
         public async Task<IActionResult> Delete(int EventoId)
         {
             try
@@ -116,7 +116,7 @@ namespace ProAgil.WebAPI.Controllers
                 var evento = await _repo.GetAllEventoAsyncById(EventoId, false);
                 if (evento == null) return NotFound();
 
-                _repo.Update(evento);
+                _repo.Delete(evento);
 
                 if (await _repo.SaveChangesAsync())
                 {

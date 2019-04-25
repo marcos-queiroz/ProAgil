@@ -16,10 +16,13 @@ defineLocale('pt-br', ptBrLocale);
 export class EventosComponent implements OnInit {
   eventosFiltrados: Evento[];
   eventos: Evento[];
+  evento: Evento;
   imagemLargura = 50;
   imagemMargem = 1;
   mostrarImagem = false;
   registerForm: FormGroup;
+  modoSalvar = 'post';
+  bodyDeletarEvento = '';
 
   _filtroLista = '';
 
@@ -43,6 +46,9 @@ export class EventosComponent implements OnInit {
   }
 
   openModal(template: any) {
+    // reseta o modal
+    this.registerForm.reset();
+    // abre o modal
     template.show();
   }
 
@@ -65,9 +71,73 @@ export class EventosComponent implements OnInit {
     this.mostrarImagem = !this.mostrarImagem;
   }
 
-  //
-  salvarAlteracao() {
+  // função para carregar os dados de um evento
+  editarEvento(evento: Evento, template: any) {
+    // variavel de controle
+    this.modoSalvar = 'put';
+    // abrir o modal
+    this.openModal(template);
+    // carrega o evento
+    this.evento = evento;
+    // carrega o form com os dados do evento
+    this.registerForm.patchValue(evento);
+  }
 
+  novoEvento(template: any) {
+    // variavel de controle
+    this.modoSalvar = 'post';
+    
+    // abrir o modal
+    this.openModal(template);
+  }
+
+  // função para salvar/editar um evento
+  salvarAlteracao(template: any) {
+    // checa se os campos foram validados
+    if (this.registerForm.valid) {
+      if (this.modoSalvar === 'post') {
+        this.evento = Object.assign({}, this.registerForm.value);
+        this.eventoService.postEvento(this.evento).subscribe(
+          (novoEvento: Evento) => {
+            // fechar o modal
+            template.hide();
+            // atualizar a tabela (grid)
+            this.getEventos();
+          }, error => {
+            console.error(error);
+          }
+        );
+      } else {
+        this.evento = Object.assign({id: this.evento.id}, this.registerForm.value);
+        this.eventoService.putEvento(this.evento).subscribe(
+          () => {
+            // fechar o modal
+            template.hide();
+            // atualizar a tabela (grid)
+            this.getEventos();
+          }, error => {
+            console.error(error);
+          }
+        );
+      }
+    }
+  }
+
+  excluirEvento(evento: Evento, template: any) {
+    this.openModal(template);
+    this.evento = evento;
+    this.bodyDeletarEvento = `Tem certeza que deseja excluir o Evento: ${evento.tema}, Código: ${evento.id}`;
+  }
+  
+  confirmeDelete(template: any) {
+    this.eventoService.deleteEvento(this.evento.id).subscribe(
+      () => {
+          template.hide();
+          this.getEventos();
+        }, error => {
+          console.error(error);
+        }
+    );
   }
 
   // validação do formulario 
